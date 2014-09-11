@@ -481,3 +481,192 @@
 		git remote add origin https://github.com/rick25/blog1.git
 		git push origin master
 		git checkout -b nuevo-modelo
+
+* Ya en la nueva rama de git agrego un nuevo modelo :
+		rails generate model Comment commenter:string body:text article:references
+		  invoke  	  active_record
+	      create      db/migrate/20140911131326_create_comments.rb
+	      create      app/models/comment.rb
+	      invoke      test_unit
+	      create      test/models/comment_test.rb
+	      create      test/fixtures/comments.yml
+
+* Corro la migracion :
+		rake db:migrate
+		== 20140911131326 CreateComments: migrating ===================================
+		-- create_table(:comments)
+		   -> 0.0036s
+		== 20140911131326 CreateComments: migrated (0.0037s) ==========================
+
+* Para relacionar ambos modelos modifico el archivo app/models/article.rb asi :
+		class Article < ActiveRecord::Base
+			has_many :comments				#cada articulo tiene varios comments
+			validates :title, presence: true,
+			                   length: { minimum: 5 }
+		end
+
+* Con lo anterior hecho si en algun momento tengo una variable @article conteniendo la informacion de un article, podria ademas tener un arreglo con todos sus comentarios con @article.comments.
+
+* Agrego una ruta para los comments, modificando el archivo config/routes.rb asi :
+		Rails.application.routes.draw do
+		    resources :articles do		#con esto creo los comments como un recurso anidado de los articles
+		    	resources :comments
+		    end
+		    root 'welcome#index'
+		end
+
+* Genero un controlador llamado Comments :
+		rails generate controller Comments
+		  create  app/controllers/comments_controller.rb
+	      invoke  erb
+	      create    app/views/comments
+	      invoke  test_unit
+	      create    test/controllers/comments_controller_test.rb
+	      invoke  helper
+	      create    app/helpers/comments_helper.rb
+	      invoke    test_unit
+	      create      test/helpers/comments_helper_test.rb
+	      invoke  assets
+	      invoke    coffee
+	      create      app/assets/javascripts/comments.js.coffee
+	      invoke    scss
+	      create      app/assets/stylesheets/comments.css.scss
+
+* Modifico el archivo app/views/articles/show.html.erb para que el usuario pueda hacer un comentario lluego de ver un articulo asi :
+		<p>
+			<strong>Title:</strong>
+			<%= @article.title %>
+		</p>
+		<p>
+			<strong>Text:</strong>
+			<%= @article.text %>
+		</p>
+		<h2>Add a comment:</h2>
+		<%= form_for([@article, @article.comments.build]) do |f| %>
+		  	<p>
+		    	<%= f.label :commenter %><br>
+		    	<%= f.text_field :commenter %>
+		  	</p>
+		  	<p>
+		    	<%= f.label :body %><br>
+		    	<%= f.text_area :body %>
+		  	</p>
+		  	<p>
+		    	<%= f.submit %>
+		  	</p>
+		<% end %>
+		<%= link_to 'Back', articles_path %> | <%= link_to 'Edit', edit_article_path(@article) %>
+
+* Ahora modificamos el controlador comments asi :
+		class CommentsController < ApplicationController
+			def create
+		    	@article = Article.find(params[:article_id])			#se busca el articulo por el article_id
+		    	@comment = @article.comments.create(comment_params)		#se crea el comentario usando el articulo encontrado
+		    	redirect_to article_path(@article)						#se redirige a
+		  	end
+		 
+		  	private
+		    	def comment_params
+		      		params.require(:comment).permit(:commenter, :body)
+		    	end
+		end
+
+* Agrego a la vista articles/show.html.erb lo siguiente :
+		<h2>Comments</h2>
+		<% @article.comments.each do |comment| %>
+		    <p>
+		        <strong>Commenter:</strong>
+		        <%= comment.commenter %>
+		    </p>
+		 
+		    <p>
+		        <strong>Comment:</strong>
+		        <%= comment.body %>
+		    </p>
+		<% end %>
+
+* Para limpiar la vista show.html.erb creo el archivo app/views/comments/_comment.html.erb :
+		<p>
+		    <strong>Commenter:</strong>
+		    <%= comment.commenter %>
+		</p>
+		 
+		<p>
+		    <strong>Comment:</strong>
+		    <%= comment.body %>
+		</p>
+* Tambien creo el archivo app/views/comments/_form.html.erb :
+		<%= form_for([@article, @article.comments.build]) do |f| %>
+		  	<p>
+		    	<%= f.label :commenter %><br>
+		    	<%= f.text_field :commenter %>
+		  	</p>
+		  	<p>
+		    	<%= f.label :body %><br>
+		    	<%= f.text_area :body %>
+		  	</p>
+		  	<p>
+		    	<%= f.submit %>
+		  	</p>
+		<% end %>
+* Y Modifico la vista show asi :
+		<p>
+			<strong>Title:</strong>
+			<%= @article.title %>
+		</p>
+		<p>
+			<strong>Text:</strong>
+			<%= @article.text %>
+		</p>
+
+		<h2>Comments</h2>
+		<% @article.comments.each do |comment| %>
+		    <%= render @article.comments %>
+		<% end %>
+
+		<h2>Add a comment:</h2>
+		<%= render 'comments/form' %>
+		<%= link_to 'Back', articles_path %> | <%= link_to 'Edit', edit_article_path(@article) %>
+
+* Agrego un enlace en el archivo comments/_comment.html.erb asi :
+		<p>
+		    <strong>Commenter:</strong>
+		    <%= comment.commenter %>
+		</p>
+		<p>
+		    <strong>Comment:</strong>
+		    <%= comment.body %>
+		</p>
+		<p>
+		  	<%= link_to 'Destroy Comment', [comment.article, comment],
+		               method: :delete,
+		               data: { confirm: 'Are you sure?' } %>
+		</p>
+
+* Añadimos el metodo destroy en el controlador comments para poder eliminar comentarios inadecuados :
+		def destroy
+		    @article = Article.find(params[:article_id])			#se busca el comentario por el id
+		    @comment = @article.comments.find(params[:id])			#se busca el comentario con el id de comentario
+		    @comment.destroy										#se elimina de la base de datos
+		    redirect_to article_path(@article)
+		end
+
+* Modificamos el archivo app/models/article.erb para que se eliminen los comentarios relacionados si se elimina un articulo asi :
+		class Article < ActiveRecord::Base
+			has_many :comments, dependent: :destroy				#cada articulo tiene varios comments
+			validates :title, presence: true,
+			                   length: { minimum: 5 }
+		end
+
+* Añadimos una autenticacion basica provista por rails, para eso agrego al inicio del controlador articles para que el usuario que no este autenticado no pueda usar los metodos, excepto el index y el show asi :
+		http_basic_authenticate_with name: "dhh", password: "secret", except: [:index, :show]
+
+* Ademas en el controlador comments queremos que solo los usuarios autenticados puedan borrar comentarios, para eso agrego al inicio del controlador lo siguiente :
+		http_basic_authenticate_with name: "dhh", password: "secret", only: :destroy
+
+* Luego de ver que toda la aplicacion anda como esperamos vamos a pasarlo a github, para eso hacemos :
+		git status
+		git add .
+		git commit -m "Agregado comentarios y autenticacion basica"
+		git checkout master				#me cambio a la rama master
+		git
