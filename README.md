@@ -666,7 +666,11 @@
 
 * Luego de ver que toda la aplicacion anda como esperamos vamos a pasarlo a github, para eso hacemos :
 		git status
+<<<<<<< HEAD
 		git add .
 		git commit -m "Agregado comentarios y autenticacion basica"
 		git checkout master				#me cambio a la rama master
 		git
+=======
+		
+>>>>>>> nuevo-modelo
