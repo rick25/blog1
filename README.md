@@ -670,3 +670,6 @@
 		git commit -m "Agregado comentarios y autenticacion basica"
 		git checkout master				#me cambio a la rama master
 		git merge nuevo-modelo			#combino las ramas en la rama master
+		git push origen master 			#mando los cambios al github
+		git branch -d nuevo-modelo		#para eliminar la rama nuevo-modelo
+		git checkout -b twitter-bootstrap 	#creo una nueva rama twitter-bootstrap
