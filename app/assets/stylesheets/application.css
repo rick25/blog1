@@ -11,5 +11,16 @@
  * file per style scope.
  *
  *= require_tree .
+ *= require bootstrap_and_overrides
  *= require_self
  */
+
+/* Mis hojas de estilo */
+
+footer {
+	/*position: fixed;*/
+	bottom: 0;
+	left: 0;
+	right: 0;
+	text-align: center;
+}

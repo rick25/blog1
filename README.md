@@ -673,3 +673,78 @@
 		git push origen master 			#mando los cambios al github
 		git branch -d nuevo-modelo		#para eliminar la rama nuevo-modelo
 		git checkout -b twitter-bootstrap 	#creo una nueva rama twitter-bootstrap
+
+* En la rama nueva (twitter-bootstrap) modifico el archivo Gemfile :
+		source 'https://rubygems.org'
+		gem 'rails', '4.1.5'
+		gem 'sqlite3'
+		gem 'therubyracer'
+		gem 'less-rails'
+		gem 'sass-rails', '~> 4.0.3'
+		gem 'coffee-rails', '~> 4.0.0'
+		gem 'twitter-bootstrap-rails'
+		gem 'uglifier', '>= 1.3.0'
+		gem 'jquery-rails'
+		gem 'turbolinks'
+		gem 'jbuilder', '~> 2.0'
+		gem 'sdoc', '~> 0.4.0',          group: :doc
+		gem 'spring',        group: :development
+
+* Ejecuto :
+		bundle update
+		rails g bootstrap:install less
+			  insert  app/assets/javascripts/application.js
+		      create  app/assets/javascripts/bootstrap.js.coffee
+		      create  app/assets/stylesheets/bootstrap_and_overrides.css.less
+		      create  config/locales/en.bootstrap.yml
+		        gsub  app/assets/stylesheets/application.css
+		rails g bootstrap:layout application fluid		#si hay algun error darle Y
+
+* Para la parte del diseño modificar el archivo app/views/layouts/application.html.erb y aplicar las clases que quiera de twitter bootstrap 3.2.0 :
+		- cambiar linea 41 de <div class="navbar navbar-default navbar-static-top"> a <div class="navbar navbar-inverse navbar-static-top">
+		-Otras muchas modificaciones en todas las vistas
+
+* Modifico la siguiente linea en el archivo app/assets/stylesheets/application.css :
+			/*
+			 * This is a manifest file that'll be compiled into application.css, which will include all the files
+			 * listed below.
+			 *
+			 * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
+			 * or vendor/assets/stylesheets of plugins, if any, can be referenced here using a relative path.
+			 *
+			 * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+			 * compiled file so the styles you add here take precedence over styles defined in any styles
+			 * defined in the other CSS/SCSS files in this directory. It is generally better to create a new
+			 * file per style scope.
+			 *
+			 *= require_tree .
+			 *= require bootstrap_and_overrides
+			 *= require_self
+			 */
+
+			/* Mis hojas de estilo */
+
+			footer {
+				/*position: fixed;*/
+				bottom: 0;
+				left: 0;
+				right: 0;
+				text-align: center;
+			}
+* Si necesito algun icono busco en :
+		http://fortawesome.github.io/Font-Awesome/examples/#basic
+		http://fortawesome.github.io/Font-Awesome/icons/#form-control
+		ejemplo:
+			<span class="fa fa-spinner fa-spin"></span>
+
+* Luego de hacer todas las modificaciones :
+		git status
+		git branch 		#estoy en la rama twitter-bootstrap
+		git add .
+		git commit -m "agregado estilo a la aplicacion"
+* Ahora creo una nueva rama en github llamada twitter-bootstrap :
+		git push origen/twitter-bootstrap twitter-bootstrap 	#para enviar a la nueva rama en github las 
+																#modificaciones con el estilo
+		
+
+
